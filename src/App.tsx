@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { CloudUpload as UploadCloud, Archive as FolderArchived, Loader2, Settings, Terminal, PackageCheck, Download, CodeXml, BookOpen } from 'lucide-react';
 import { detectEngine, DetectionResult } from './lib/engineDetector';
@@ -72,7 +72,7 @@ export default function App() {
       "Done! 'web_export.zip' generated successfully.",
       "",
       "-------------------------------------------",
-      "[SIMULATION COMPLETE]",
+      "[PROCESS COMPLETE]",
       "Notice: This terminal is a simulation of the build process.",
       "To perform your actual web port build:",
       "▶ Go to 'GitHub Action (.yml)' tab and add it to your repo.",
@@ -114,7 +114,7 @@ export default function App() {
               Upload Mod Zip
             </h2>
             <div 
-              onDragOver={(e) => { e.preventDefault(); setIsHovering(true); }}
+              onDragOver={(e: { preventDefault: () => void; }) => { e.preventDefault(); setIsHovering(true); }}
               onDragLeave={() => setIsHovering(false)}
               onDrop={handleDrop}
               onClick={() => !isProcessing && fileInputRef.current?.click()}
@@ -146,9 +146,19 @@ export default function App() {
                   <Settings className="w-4 h-4" /> Detected Configuration
                 </h3>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-400">Target Engine:</span>
-                    <span className="font-semibold text-purple-400">{detection.engine}</span>
+                    <select 
+                      className="bg-gray-900 border border-gray-700 text-purple-400 font-semibold rounded px-2 py-1 text-sm focus:outline-none focus:border-purple-500"
+                      value={detection.engine}
+                      onChange={(e) => setDetection({...detection, engine: e.target.value as any})}
+                    >
+                      <option value="Psych Engine">Psych Engine</option>
+                      <option value="JS Engine">JS Engine</option>
+                      <option value="Codename Engine">Codename Engine</option>
+                      <option value="Leather Engine">Leather Engine</option>
+                      <option value="Unknown">Unknown</option>
+                    </select>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Total Files:</span>
