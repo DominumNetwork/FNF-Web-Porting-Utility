@@ -98,12 +98,12 @@ ${jsEngineScript}${videoScript}
           echo 'package mock; class Thread { public static function create(f:Void->Void) { f(); } public static function readMessage(b:Bool) return null; public static function sendMessage(m:Dynamic) {} }' > source/mock/Thread.hx
           echo 'package mock; class Mutex { public function new() {} public function acquire() {} public function release() {} }' > source/mock/Mutex.hx
           
-          find source -name "*.hx" -type f -exec sed -i -e 's/sys\.FileSystem/mock.FileSystem/g' \
-                                                          -e 's/sys\.io\.File/mock.File/g' \
-                                                          -e 's/sys\.io\.Process/mock.Process/g' \
-                                                          -e 's/sys\.thread\.Thread/mock.Thread/g' \
-                                                          -e 's/sys\.thread\.Mutex/mock.Mutex/g' \
-                                                          -e 's/\bSys\./mock.Sys./g' \
+          find source -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/mock.FileSystem/g' \\
+                                                          -e 's/sys\\.io\\.File/mock.File/g' \\
+                                                          -e 's/sys\\.io\\.Process/mock.Process/g' \\
+                                                          -e 's/sys\\.thread\\.Thread/mock.Thread/g' \\
+                                                          -e 's/sys\\.thread\\.Mutex/mock.Mutex/g' \\
+                                                          -e 's/\\bSys\\./mock.Sys./g' \\
                                                           -e 's/import Sys;/import mock.Sys;/g' {} +
 
       - name: Optimization & Web Compile Build
