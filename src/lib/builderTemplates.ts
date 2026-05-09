@@ -41,7 +41,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout Base Engine
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: '${engineRepo}'
           path: 'engine-source'
@@ -115,7 +115,7 @@ ${jsEngineScript}${videoScript}
           zip -r ../../../../../web_export.zip *
 
       - name: Upload Web Export
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: web-export
           path: web_export.zip
