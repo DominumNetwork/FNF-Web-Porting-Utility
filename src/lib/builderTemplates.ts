@@ -54,7 +54,7 @@ jobs:
           URL="\${{ github.event.inputs.mod_url }}"
           
           if [[ "$URL" == *"drive.google.com"* ]]; then
-            gdown "$URL" -O mod-payload.zip --fuzzy
+            gdown "$URL" -O mod-payload.zip
           else
             wget -q -O mod-payload.zip "$URL"
           fi
