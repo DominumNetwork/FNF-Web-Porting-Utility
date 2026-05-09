@@ -103,14 +103,14 @@ ${jsEngineScript}${videoScript}
           echo 'package hxdiscord_rpc; class Types { public static inline var DISCORD_REPLY_NO=0; public static inline var DISCORD_REPLY_YES=1; public static inline var DISCORD_REPLY_IGNORE=2; }' > source/hxdiscord_rpc/Types.hx
           echo 'package hxdiscord_rpc; typedef DiscordPresence = Dynamic;' > source/hxdiscord_rpc/DiscordPresence.hx
 
-          find source -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/FileSystem/g' \\
-                                                          -e 's/sys\\.io\\.File/File/g' \\
-                                                          -e 's/sys\\.io\\.Process/Process/g' \\
-                                                          -e 's/sys\\.thread\\.Thread/Thread/g' \\
-                                                          -e 's/sys\\.thread\\.Mutex/Mutex/g' \\
-                                                          -e '/import cpp\\./d' \\
-                                                          -e 's/cpp\\.[a-zA-Z0-9_]+/Dynamic/g' \\
-                                                          -e '/import llua\\./d' \\
+          find source -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/FileSystem/g' \
+                                                          -e 's/sys\\.io\\.File/File/g' \
+                                                          -e 's/sys\\.io\\.Process/Process/g' \
+                                                          -e 's/sys\\.thread\\.Thread/Thread/g' \
+                                                          -e 's/sys\\.thread\\.Mutex/Mutex/g' \
+                                                          -e '/import cpp/d' \
+                                                          -e 's/cpp\\.[a-zA-Z0-9_]+/Dynamic/g' \
+                                                          -e '/import llua/d' \
                                                           -e 's/llua\\.[a-zA-Z0-9_]+/Dynamic/g' {} +
           find . -name "FlxSoundTray.hx" -type f -exec sed -i 's/public function new(/public function showIncrement() { show(); } public function showDecrement() { show(); }\\n\\n&/g' {} +
 
