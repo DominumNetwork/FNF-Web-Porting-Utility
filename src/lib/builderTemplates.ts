@@ -87,6 +87,25 @@ ${jsEngineScript}${videoScript}
           haxelib install openfl
           haxelib install flixel
 
+      - name: Patch HTML5 incompatible code (Mock Sys)
+        run: |
+          cd engine-source
+          mkdir -p source/mock
+          echo 'package mock; class FileSystem { public static function absolutePath(path:String) return path; public static function exists(path:String) return false; public static function readDirectory(path:String):Array<String> return []; public static function isDirectory(path:String) return false; public static function stat(path:String) return null; public static function fullPath(path:String) return path; public static function createDirectory(path:String) {} public static function deleteFile(path:String) {} public static function deleteDirectory(path:String) {} }' > source/mock/FileSystem.hx
+          echo 'package mock; class File { public static function getContent(path:String) return ""; public static function getBytes(path:String) return null; public static function saveContent(path:String, c:String) return; public static function saveBytes(path:String, b:Dynamic) return; public static function copy(s:String, d:String) {} }' > source/mock/File.hx
+          echo 'package mock; class Sys { public static function exit(code:Int) {} public static function sleep(t:Float) {} public static function command(c:String, ?a:Array<String>) return 0; public static function args():Array<String> return []; public static function getCwd() return ""; public static function setCwd(s:String) {} public static function print(v:Dynamic) {} public static function println(v:Dynamic) {} public static function environment() return new haxe.ds.StringMap<String>(); }' > source/mock/Sys.hx
+          echo 'package mock; class Process { public function new(c:String, ?a:Dynamic) {} public function exitCode(b:Bool=true) return 0; public function close() {} }' > source/mock/Process.hx
+          echo 'package mock; class Thread { public static function create(f:Void->Void) { f(); } public static function readMessage(b:Bool) return null; public static function sendMessage(m:Dynamic) {} }' > source/mock/Thread.hx
+          echo 'package mock; class Mutex { public function new() {} public function acquire() {} public function release() {} }' > source/mock/Mutex.hx
+          
+          find source -name "*.hx" -type f -exec sed -i -e 's/sys\.FileSystem/mock.FileSystem/g' \
+                                                          -e 's/sys\.io\.File/mock.File/g' \
+                                                          -e 's/sys\.io\.Process/mock.Process/g' \
+                                                          -e 's/sys\.thread\.Thread/mock.Thread/g' \
+                                                          -e 's/sys\.thread\.Mutex/mock.Mutex/g' \
+                                                          -e 's/\bSys\./mock.Sys./g' \
+                                                          -e 's/import Sys;/import mock.Sys;/g' {} +
+
       - name: Optimization & Web Compile Build
         run: |
           cd engine-source

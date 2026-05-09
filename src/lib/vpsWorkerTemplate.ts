@@ -54,6 +54,16 @@ app.post('/build', upload.single('modZip'), (req, res) => {
       execSync('haxelib install hmm --quiet', { cwd: \`\${workDir}/engine-source\` });
       execSync('haxelib run hmm install --quiet', { cwd: \`\${workDir}/engine-source\` });
 
+      log('Mocking sys packages for HTML5 compatibility...');
+      execSync('mkdir -p source/mock', { cwd: \`\${workDir}/engine-source\` });
+      fs.writeFileSync(\`\${workDir}/engine-source/source/mock/FileSystem.hx\`, 'package mock; class FileSystem { public static function absolutePath(path:String) return path; public static function exists(path:String) return false; public static function readDirectory(path:String):Array<String> return []; public static function isDirectory(path:String) return false; public static function stat(path:String) return null; public static function fullPath(path:String) return path; public static function createDirectory(path:String) {} public static function deleteFile(path:String) {} public static function deleteDirectory(path:String) {} }');
+      fs.writeFileSync(\`\${workDir}/engine-source/source/mock/File.hx\`, 'package mock; class File { public static function getContent(path:String) return ""; public static function getBytes(path:String) return null; public static function saveContent(path:String, c:String) return; public static function saveBytes(path:String, b:Dynamic) return; public static function copy(s:String, d:String) {} }');
+      fs.writeFileSync(\`\${workDir}/engine-source/source/mock/Sys.hx\`, 'package mock; class Sys { public static function exit(code:Int) {} public static function sleep(t:Float) {} public static function command(c:String, ?a:Array<String>) return 0; public static function args():Array<String> return []; public static function getCwd() return ""; public static function setCwd(s:String) {} public static function print(v:Dynamic) {} public static function println(v:Dynamic) {} public static function environment() return new haxe.ds.StringMap<String>(); }');
+      fs.writeFileSync(\`\${workDir}/engine-source/source/mock/Process.hx\`, 'package mock; class Process { public function new(c:String, ?a:Dynamic) {} public function exitCode(b:Bool=true) return 0; public function close() {} }');
+      fs.writeFileSync(\`\${workDir}/engine-source/source/mock/Thread.hx\`, 'package mock; class Thread { public static function create(f:Void->Void) { f(); } public static function readMessage(b:Bool) return null; public static function sendMessage(m:Dynamic) {} }');
+      fs.writeFileSync(\`\${workDir}/engine-source/source/mock/Mutex.hx\`, 'package mock; class Mutex { public function new() {} public function acquire() {} public function release() {} }');
+      execSync(\`find source -name "*.hx" -type f -exec sed -i -e 's/sys\\\\.FileSystem/mock.FileSystem/g' -e 's/sys\\\\.io\\\\.File/mock.File/g' -e 's/sys\\\\.io\\\\.Process/mock.Process/g' -e 's/sys\\\\.thread\\\\.Thread/mock.Thread/g' -e 's/sys\\\\.thread\\\\.Mutex/mock.Mutex/g' -e 's/\\\\bSys\\\\./mock.Sys./g' -e 's/import Sys;/import mock.Sys;/g' {} +\`, { cwd: \`\${workDir}/engine-source\` });
+
       log('Starting Lime HTML5 Compiler (With Optimizations)...');
       const build = spawn('haxelib', ['run', 'lime', 'build', 'html5', '-release', '-D', 'DISCORD_DISABLE', '-D', 'NO_PRELOAD_ALL'], {
         cwd: \`\${workDir}/engine-source\`
