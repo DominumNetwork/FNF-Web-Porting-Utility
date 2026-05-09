@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import JSZip from 'jszip';
-import { CloudUpload as UploadCloud, Archive as FolderArchived, Loader2, Settings, Terminal, PackageCheck, Download, CodeXml } from 'lucide-react';
+import { CloudUpload as UploadCloud, Archive as FolderArchived, Loader2, Settings, Terminal, PackageCheck, Download, CodeXml, BookOpen } from 'lucide-react';
 import { detectEngine, DetectionResult } from './lib/engineDetector';
 import { generateGithubAction } from './lib/builderTemplates';
 import { generateVpsWorker } from './lib/vpsWorkerTemplate';
@@ -9,7 +9,7 @@ export default function App() {
   const [isHovering, setIsHovering] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [detection, setDetection] = useState<DetectionResult | null>(null);
-  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'vps' | 'cdn' | 'terminal'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'github' | 'vps' | 'cdn' | 'terminal' | 'tutorial'>('tutorial');
   const [simulatedLogs, setSimulatedLogs] = useState<string[]>([]);
   
   const [cdnUsername, setCdnUsername] = useState('username');
@@ -30,7 +30,7 @@ export default function App() {
       // Artificial delay for better UX feeling
       await new Promise(r => setTimeout(r, 600)); 
       
-      const result = detectEngine(files);
+      const result = detectEngine(file.name, files);
       setDetection(result);
       setActiveTab('github');
     } catch (err) {
@@ -69,7 +69,15 @@ export default function App() {
       "Notice: Applied -D DISCORD_DISABLE and -D NO_PRELOAD_ALL optimizations.",
       "Zipping Flat Web Package (export/release/html5/bin)...",
       "Packaging index.html and assets...",
-      "Done! 'web_export.zip' generated successfully."
+      "Done! 'web_export.zip' generated successfully.",
+      "",
+      "-------------------------------------------",
+      "[SIMULATION COMPLETE]",
+      "Notice: This terminal is a simulation of the build process.",
+      "To perform your actual web port build:",
+      "▶ Go to 'GitHub Action (.yml)' tab and add it to your repo.",
+      "▶ Or use the 'VPS Worker (Node.js)' on your own server.",
+      "-------------------------------------------"
     ];
     
     if (detection?.engine === 'JS Engine' && detection.filesToFix.length > 0) {
@@ -172,41 +180,113 @@ export default function App() {
 
         {/* Content Area */}
         <div className="md:col-span-8 flex flex-col min-h-[600px]">
-          {detection ? (
-            <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col flex-1 shadow-xl">
-              <div className="flex bg-gray-950 border-b border-gray-800">
-                <button 
-                  onClick={() => setActiveTab('github')}
-                  className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'github' ? 'bg-gray-900 text-purple-400 border-b-2 border-purple-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
-                >
-                  GitHub Action (.yml)
-                </button>
-                <button 
-                  onClick={() => setActiveTab('vps')}
-                  className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'vps' ? 'bg-gray-900 text-purple-400 border-b-2 border-purple-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
-                >
-                  VPS Worker (Node.js)
-                </button>
-                <button 
-                  onClick={() => setActiveTab('cdn')}
-                  className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'cdn' ? 'bg-gray-900 text-green-400 border-b-2 border-green-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <CodeXml className="w-4 h-4" /> jsDelivr Snippet
-                  </div>
-                </button>
-                <button 
-                  onClick={() => setActiveTab('terminal')}
-                  className={`px-6 py-3 text-sm font-medium transition-colors ml-auto ${activeTab === 'terminal' ? 'bg-gray-900 text-blue-400 border-b-2 border-blue-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <Terminal className="w-4 h-4" /> Live Terminal
-                  </div>
-                </button>
-              </div>
+          <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col flex-1 shadow-xl">
+            <div className="flex bg-gray-950 border-b border-gray-800 flex-wrap">
+              {detection && (
+                <>
+                  <button 
+                    onClick={() => setActiveTab('github')}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'github' ? 'bg-gray-900 text-purple-400 border-b-2 border-purple-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
+                  >
+                    GitHub Action (.yml)
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('vps')}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'vps' ? 'bg-gray-900 text-purple-400 border-b-2 border-purple-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
+                  >
+                    VPS Worker (Node.js)
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('cdn')}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'cdn' ? 'bg-gray-900 text-green-400 border-b-2 border-green-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <CodeXml className="w-4 h-4" /> jsDelivr Snippet
+                    </div>
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('terminal')}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ml-auto border-l border-gray-800 ${activeTab === 'terminal' ? 'bg-gray-900 text-blue-400 border-b-2 border-blue-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Terminal className="w-4 h-4" /> Live Terminal
+                    </div>
+                  </button>
+                </>
+              )}
+              <button 
+                onClick={() => setActiveTab('tutorial')}
+                className={`px-6 py-3 text-sm font-medium transition-colors ${!detection ? 'flex-1' : 'ml-auto border-l border-gray-800'} ${activeTab === 'tutorial' ? 'bg-gray-900 text-orange-400 border-b-2 border-orange-500' : 'text-gray-400 hover:text-gray-200 hover:bg-gray-900'}`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <BookOpen className="w-4 h-4" /> How to Use & Tutorial
+                </div>
+              </button>
+            </div>
 
-              <div className="p-1 flex-1 bg-gray-950 flex flex-col relative">
-                {activeTab === 'github' && (
+            <div className="p-1 flex-1 bg-gray-950 flex flex-col relative">
+              {!detection && activeTab !== 'tutorial' && (
+                <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-800 rounded-xl bg-gray-900/20 text-center p-12 m-4">
+                  <PackageCheck className="w-16 h-16 text-gray-700 mb-4" />
+                  <h3 className="text-xl font-medium text-gray-300">Awaiting Mod Payload</h3>
+                  <p className="text-gray-500 max-w-md mt-2">Upload your mod `.zip` to automatically generate the Vercel-compatible GitHub target or Node.js Build Worker API tailored for your FNF engine.</p>
+                </div>
+              )}
+
+              {activeTab === 'tutorial' && (
+                <div className="h-full flex flex-col overflow-auto custom-scrollbar p-6 bg-gray-900/30">
+                  <div className="max-w-2xl mx-auto space-y-6 text-gray-300">
+                    <div className="border-b border-gray-800 pb-4">
+                      <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                        <BookOpen className="w-6 h-6 text-orange-400" /> Getting Started
+                      </h2>
+                      <p className="text-gray-400 mt-2">
+                        Web browsers cannot compile Haxe on their own. This tool bridges the gap by letting you easily set up your own compilation server directly through GitHub Actions (free) or a cheap VPS, so you don't even need a PC!
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-white">1. Upload your Mod (.zip)</h3>
+                      <p className="text-sm">
+                        Zip your <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">assets</code> and <code className="bg-gray-800 px-1 py-0.5 rounded text-purple-300">mods</code> folders together into a single file and upload it here. 
+                        The system will scan the contents to determine which engine (Psych, JS, Leather, etc.) to use, and automatically generate scripts perfectly tailored for your mod.
+                      </p>
+                    </div>
+
+                    <div className="space-y-3 border-l-2 border-purple-500 pl-4">
+                      <h3 className="text-lg font-semibold text-purple-400">Method A: Using GitHub Actions (Free, No PC Required)</h3>
+                      <p className="text-sm">If you don't have a PC or server, GitHub can compile the game for you entirely online:</p>
+                      <ul className="list-disc list-inside text-sm space-y-1 text-gray-400">
+                        <li>Create a free account and a new Repository on <a href="https://github.com" target="_blank" className="text-purple-400 hover:underline">GitHub</a>.</li>
+                        <li>Upload your Mod `.zip` file into the root of the repository and name it <code className="text-green-300">mod-payload.zip</code>.</li>
+                        <li>Go to the <span className="text-white">GitHub Action (.yml)</span> tab generated by this tool, download the file, and upload it to your Repo under <code className="text-green-300">.github/workflows/</code>.</li>
+                        <li>Go to the "Actions" tab on GitHub to start the build! When it's done, you can download your web export.</li>
+                      </ul>
+                    </div>
+
+                    <div className="space-y-3 border-l-2 border-blue-500 pl-4">
+                      <h3 className="text-lg font-semibold text-blue-400">Method B: Dedicated VPS Worker</h3>
+                      <p className="text-sm">For advanced users who have a Linux Virtual Private Server (VPS):</p>
+                      <ul className="list-disc list-inside text-sm space-y-1 text-gray-400">
+                        <li>Ensure you have NodeJS, Haxe, and Haxelib installed on your server.</li>
+                        <li>Copy the generated <span className="text-white">VPS Worker (Node.js)</span> code (worker.js) to your server.</li>
+                        <li>Run <code className="text-blue-300">node worker.js</code> and send a POST request with your ZIP file to port 8080!</li>
+                      </ul>
+                    </div>
+
+                    <div className="space-y-3 border-l-2 border-green-500 pl-4">
+                      <h3 className="text-lg font-semibold text-green-400">The Ultimate Goal: jsDelivr CDN</h3>
+                      <p className="text-sm">
+                        Once you have your compiled <code className="text-green-300">web_export.zip</code>, extract the files and upload them to a GitHub repository. 
+                        Because this tool standardizes your output to use <code className="text-green-300">funkin.js</code>, you can use the <strong>jsDelivr Snippet</strong> tab to instantly embed your game onto any website seamlessly—serving assets entirely from the CDN.
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+              )}
+              
+              {detection && activeTab === 'github' && (
                   <div className="h-full flex flex-col">
                     <div className="p-4 flex justify-between items-center bg-gray-900 border-b border-gray-800">
                       <p className="text-sm text-gray-400">Save this to <span className="font-mono text-gray-300">.github/workflows/build-port.yml</span> in your repository.</p>
@@ -223,7 +303,7 @@ export default function App() {
                   </div>
                 )}
                 
-                {activeTab === 'vps' && (
+                {detection && activeTab === 'vps' && (
                   <div className="h-full flex flex-col">
                     <div className="p-4 flex justify-between items-center bg-gray-900 border-b border-gray-800">
                       <p className="text-sm text-gray-400">Run this Node.js script on your Linux VPS API server.</p>
@@ -240,7 +320,7 @@ export default function App() {
                   </div>
                 )}
 
-                {activeTab === 'cdn' && (
+                {detection && activeTab === 'cdn' && (
                   <div className="h-full flex flex-col">
                     <div className="p-4 bg-gray-900 border-b border-gray-800 flex flex-col gap-4">
                       <div>
@@ -285,7 +365,7 @@ export default function App() {
                   </div>
                 )}
 
-                {activeTab === 'terminal' && (
+                {detection && activeTab === 'terminal' && (
                   <div className="h-full p-4 overflow-auto custom-scrollbar font-mono text-xs flex flex-col gap-1 bg-black text-gray-300">
                     {simulatedLogs.length === 0 && <p className="text-gray-600">Waiting for build to start...</p>}
                     {simulatedLogs.map((log, i) => (
@@ -302,13 +382,6 @@ export default function App() {
                 )}
               </div>
             </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-800 rounded-xl bg-gray-900/20 text-center p-12">
-              <PackageCheck className="w-16 h-16 text-gray-700 mb-4" />
-              <h3 className="text-xl font-medium text-gray-300">Awaiting Mod Payload</h3>
-              <p className="text-gray-500 max-w-md mt-2">Upload your mod `.zip` to automatically generate the Vercel-compatible GitHub target or Node.js Build Worker API tailored for your FNF engine.</p>
-            </div>
-          )}
         </div>
       </main>
       
@@ -322,4 +395,3 @@ export default function App() {
     </div>
   );
 }
-

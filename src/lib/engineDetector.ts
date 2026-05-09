@@ -8,30 +8,31 @@ export interface DetectionResult {
   totalFiles: number;
 }
 
-export function detectEngine(fileNames: string[]): DetectionResult {
-  let codenameScore = 0;
-  let psychScore = 0;
-  let leatherScore = 0;
-  let jsEngineScore = 0;
+export function detectEngine(zipFilename: string, fileNames: string[]): DetectionResult {
+  let isJsEngine = false;
+  let isCodename = false;
+  let isLeather = false;
+  let isPsych = false;
 
   let hasVideos = false;
   const filesToFix: string[] = [];
 
-  fileNames.forEach(file => {
+  const allPaths = [zipFilename, ...fileNames];
+
+  allPaths.forEach(file => {
     const lower = file.toLowerCase();
 
-    // Video check
-    if (lower.endsWith('.mp4')) {
+    // Video check (skip zip file name for this check)
+    if (file !== zipFilename && lower.endsWith('.mp4')) {
       hasVideos = true;
     }
 
-    // JS Engine case sensitivity check (strict formatting required from prompt)
-    if (lower.includes('songs/') && (lower.endsWith('voices.ogg') || lower.endsWith('inst.ogg'))) {
+    // JS Engine case sensitivity check
+    if (file !== zipFilename && lower.includes('songs/') && (lower.endsWith('voices.ogg') || lower.endsWith('inst.ogg'))) {
       const parts = file.split('/');
       const filename = parts[parts.length - 1];
       
       // We want to force it exactly to Voices.ogg or Inst.ogg 
-      // if it's already exact, no change needed. But any lowercase variation needs fixing.
       if (lower.endsWith('voices.ogg') && filename !== 'Voices.ogg') {
         filesToFix.push(file);
       }
@@ -40,40 +41,41 @@ export function detectEngine(fileNames: string[]): DetectionResult {
       }
     }
 
-    // Heuristics
-    if (lower.includes('js_engine') || lower.includes('jsengine-master') || lower.includes('js engine') || lower.includes('friday-night-funkin-js-engine')) {
-      jsEngineScore += 10;
+    // Heuristics based on name markers
+    if (lower.includes('js_engine') || lower.includes('jsengine') || lower.includes('js engine') || lower.includes('friday-night-funkin-js-engine')) {
+      isJsEngine = true;
     }
     if (lower.includes('leather_') || lower.includes('leather engine') || lower.includes('leatherengine')) {
-      leatherScore += 10;
+      isLeather = true;
     }
     if (lower.includes('codename_') || lower.includes('codename engine') || lower.includes('codenameengine')) {
-      codenameScore += 10;
+      isCodename = true;
     }
 
     if (lower.includes('mods/') || lower.includes('custom_events/')) {
-      psychScore += 1;
+      isPsych = true;
     }
     if (lower.includes('source/') && lower.includes('assets/')) {
-      codenameScore += 1;
+      isCodename = true;
     }
   });
 
-  const scores: Record<EngineType, number> = {
-    'Codename Engine': codenameScore,
-    'Leather Engine': leatherScore,
-    'JS Engine': jsEngineScore,
-    'Psych Engine': psychScore,
-    'Unknown': 0
-  };
-
-  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-  const topScore = sorted[0][1];
-  const topEngine = topScore > 0 ? (sorted[0][0] as EngineType) : 'Psych Engine'; // Default to Psych generally
+  // Priority: Specific Forks > General Base (Psych)
+  let topEngine: EngineType = 'Psych Engine'; // Default fallback
+  
+  if (isJsEngine) {
+    topEngine = 'JS Engine';
+  } else if (isLeather) {
+    topEngine = 'Leather Engine';
+  } else if (isCodename) {
+    topEngine = 'Codename Engine';
+  } else if (isPsych) {
+    topEngine = 'Psych Engine';
+  }
 
   return {
     engine: topEngine,
-    confidence: topScore,
+    confidence: 100, // Determined via direct feature flags
     filesToFix,
     hasVideos,
     totalFiles: fileNames.length
