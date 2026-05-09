@@ -1,16 +1,14 @@
 import { EngineType } from './engineDetector';
 
-export function generateGithubAction(engine: EngineType, hasVideos: boolean, filesToFix: string[]): string {
-  const engineRepoMapping: Record<EngineType, string> = {
-    'Psych Engine': 'ShadowMario/FNF-PsychEngine',
-    'Codename Engine': 'CodenameCrew/CodenameEngine',
-    'Leather Engine': 'Leather128/LeatherEngine',
-    'JS Engine': 'Sirox228/Friday-Night-Funkin-JS-Engine',
-    'Unknown': 'ShadowMario/FNF-PsychEngine'
-  };
+export const engineRepoMapping: Record<EngineType, string> = {
+  'Psych Engine': 'ShadowMario/FNF-PsychEngine',
+  'Codename Engine': 'CodenameCrew/CodenameEngine',
+  'Leather Engine': 'Leather128/LeatherEngine',
+  'JS Engine': 'JordanSantiagoYT/FNF-JS-Engine-Rewrite',
+  'Unknown': 'ShadowMario/FNF-PsychEngine'
+};
 
-  const engineRepo = engineRepoMapping[engine];
-
+export function generateGithubAction(engineRepo: string, hasVideos: boolean, filesToFix: string[], engineType: string): string {
   let videoScript = hasVideos ? `
       - name: Disable/Convert Videos (Web compatibility)
         run: |
@@ -18,7 +16,7 @@ export function generateGithubAction(engine: EngineType, hasVideos: boolean, fil
           find . -name "*.mp4" -type f -exec mv {} {}.disabled \\;
 ` : "";
 
-  let jsEngineScript = (engine === 'JS Engine' && filesToFix.length > 0) ? `
+  let jsEngineScript = (engineType === 'JS Engine' && filesToFix.length > 0) ? `
       - name: Fix JS Engine Song Audio File Capitalization
         run: |
           echo "Enforcing case sensitivity for Voices.ogg and Inst.ogg in songs folders..."

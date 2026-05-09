@@ -42,7 +42,7 @@ export function detectEngine(zipFilename: string, fileNames: string[]): Detectio
     }
 
     // Heuristics based on name markers
-    if (lower.includes('js_engine') || lower.includes('jsengine') || lower.includes('js engine') || lower.includes('friday-night-funkin-js-engine')) {
+    if (lower.includes('js_engine') || lower.includes('jsengine') || lower.includes('js engine') || lower.includes('friday-night-funkin-js-engine') || lower.includes('souless')) {
       isJsEngine = true;
     }
     if (lower.includes('leather_') || lower.includes('leather engine') || lower.includes('leatherengine')) {

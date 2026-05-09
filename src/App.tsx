@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { CloudUpload as UploadCloud, Archive as FolderArchived, Loader2, Settings, Terminal, PackageCheck, Download, CodeXml, BookOpen } from 'lucide-react';
 import { detectEngine, DetectionResult } from './lib/engineDetector';
-import { generateGithubAction } from './lib/builderTemplates';
+import { generateGithubAction, engineRepoMapping } from './lib/builderTemplates';
 import { generateVpsWorker } from './lib/vpsWorkerTemplate';
 
 export default function App() {
@@ -15,6 +15,8 @@ export default function App() {
   const [cdnUsername, setCdnUsername] = useState('username');
   const [cdnRepo, setCdnRepo] = useState('repo');
   const [cdnFolder, setCdnFolder] = useState('');
+  
+  const [customRepoUrl, setCustomRepoUrl] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -32,6 +34,7 @@ export default function App() {
       
       const result = detectEngine(file.name, files);
       setDetection(result);
+      setCustomRepoUrl(engineRepoMapping[result.engine] || engineRepoMapping['Unknown']);
       setActiveTab('github');
     } catch (err) {
       console.error(err);
@@ -72,7 +75,7 @@ export default function App() {
       "Done! 'web_export.zip' generated successfully.",
       "",
       "-------------------------------------------",
-      "[PROCESS COMPLETE]",
+      "[SIMULATION COMPLETE]",
       "Notice: This terminal is a simulation of the build process.",
       "To perform your actual web port build:",
       "▶ Go to 'GitHub Action (.yml)' tab and add it to your repo.",
@@ -122,7 +125,7 @@ export default function App() {
                 ${isHovering ? 'border-purple-500 bg-purple-500/10' : 'border-gray-700 hover:border-gray-500 bg-gray-800/50'}
                 ${isProcessing && 'opacity-50 pointer-events-none'}`}
             >
-              <input type="file" ref={fileInputRef} className="hidden" accept=".zip" onChange={(e) => e.target.files && processZip(e.target.files[0])} />
+              <input type="file" ref={fileInputRef} className="hidden" accept=".zip" onChange={(e: { target: { files: File[]; }; }) => e.target.files && processZip(e.target.files[0])} />
               
               {isProcessing ? (
                 <div className="flex flex-col items-center gap-3">
@@ -151,7 +154,11 @@ export default function App() {
                     <select 
                       className="bg-gray-900 border border-gray-700 text-purple-400 font-semibold rounded px-2 py-1 text-sm focus:outline-none focus:border-purple-500"
                       value={detection.engine}
-                      onChange={(e) => setDetection({...detection, engine: e.target.value as any})}
+                      onChange={(e: { target: { value: any; }; }) => {
+                        const newEngine = e.target.value as any;
+                        setDetection({...detection, engine: newEngine});
+                        setCustomRepoUrl(engineRepoMapping[newEngine as import('./lib/engineDetector').EngineType] || engineRepoMapping['Unknown']);
+                      }}
                     >
                       <option value="Psych Engine">Psych Engine</option>
                       <option value="JS Engine">JS Engine</option>
@@ -160,7 +167,17 @@ export default function App() {
                       <option value="Unknown">Unknown</option>
                     </select>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800">
+                    <span className="text-gray-400">GitHub Source:</span>
+                    <input 
+                      type="text" 
+                      className="bg-gray-900 border border-gray-700 text-gray-300 rounded px-2 py-1 text-xs w-48 focus:outline-none focus:border-purple-500"
+                      value={customRepoUrl}
+                      onChange={(e: { target: { value: any; }; }) => setCustomRepoUrl(e.target.value)}
+                      placeholder="User/RepoName"
+                    />
+                  </div>
+                  <div className="flex justify-between mt-2">
                     <span className="text-gray-400">Total Files:</span>
                     <span>{detection.totalFiles}</span>
                   </div>
@@ -303,14 +320,14 @@ export default function App() {
                     <div className="p-4 flex justify-between items-center bg-gray-900 border-b border-gray-800">
                       <p className="text-sm text-gray-400">Save this to <span className="font-mono text-gray-300">.github/workflows/build-port.yml</span> in your repository.</p>
                       <button onClick={() => {
-                        const blob = new Blob([generateGithubAction(detection.engine, detection.hasVideos, detection.filesToFix)], { type: 'text/yaml' });
+                        const blob = new Blob([generateGithubAction(customRepoUrl, detection.hasVideos, detection.filesToFix, detection.engine)], { type: 'text/yaml' });
                         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'build-port.yml'; a.click();
                       }} className="text-sm flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded transition">
                         <Download className="w-4 h-4" /> Download .yml
                       </button>
                     </div>
                     <pre className="p-4 flex-1 overflow-auto text-xs font-mono text-green-400 custom-scrollbar">
-                      {generateGithubAction(detection.engine, detection.hasVideos, detection.filesToFix)}
+                      {generateGithubAction(customRepoUrl, detection.hasVideos, detection.filesToFix, detection.engine)}
                     </pre>
                   </div>
                 )}
@@ -320,14 +337,14 @@ export default function App() {
                     <div className="p-4 flex justify-between items-center bg-gray-900 border-b border-gray-800">
                       <p className="text-sm text-gray-400">Run this Node.js script on your Linux VPS API server.</p>
                       <button onClick={() => {
-                        const blob = new Blob([generateVpsWorker('ShadowMario/FNF-PsychEngine')], { type: 'text/javascript' });
+                        const blob = new Blob([generateVpsWorker(customRepoUrl)], { type: 'text/javascript' });
                         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'worker.js'; a.click();
                       }} className="text-sm flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded transition">
                         <Download className="w-4 h-4" /> Download worker.js
                       </button>
                     </div>
                     <pre className="p-4 flex-1 overflow-auto text-xs font-mono text-blue-300 custom-scrollbar">
-                      {generateVpsWorker('ShadowMario/FNF-PsychEngine')}
+                      {generateVpsWorker(customRepoUrl)}
                     </pre>
                   </div>
                 )}
@@ -341,9 +358,9 @@ export default function App() {
                       </div>
                       
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <input type="text" placeholder="GitHub User" value={cdnUsername} onChange={e => setCdnUsername(e.target.value)} className="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded text-sm text-gray-200 focus:outline-none focus:border-green-500" />
-                        <input type="text" placeholder="Repository" value={cdnRepo} onChange={e => setCdnRepo(e.target.value)} className="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded text-sm text-gray-200 focus:outline-none focus:border-green-500" />
-                        <input type="text" placeholder="Sub-folder (optional)" value={cdnFolder} onChange={e => setCdnFolder(e.target.value)} className="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded text-sm text-gray-200 focus:outline-none focus:border-green-500" />
+                        <input type="text" placeholder="GitHub User" value={cdnUsername} onChange={(e: { target: { value: any; }; }) => setCdnUsername(e.target.value)} className="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded text-sm text-gray-200 focus:outline-none focus:border-green-500" />
+                        <input type="text" placeholder="Repository" value={cdnRepo} onChange={(e: { target: { value: any; }; }) => setCdnRepo(e.target.value)} className="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded text-sm text-gray-200 focus:outline-none focus:border-green-500" />
+                        <input type="text" placeholder="Sub-folder (optional)" value={cdnFolder} onChange={(e: { target: { value: any; }; }) => setCdnFolder(e.target.value)} className="bg-gray-800 border border-gray-700 px-3 py-1.5 rounded text-sm text-gray-200 focus:outline-none focus:border-green-500" />
                       </div>
                     </div>
                     <pre className="p-4 flex-1 overflow-auto text-xs font-mono text-green-300 custom-scrollbar">
@@ -380,7 +397,7 @@ export default function App() {
                 {detection && activeTab === 'terminal' && (
                   <div className="h-full p-4 overflow-auto custom-scrollbar font-mono text-xs flex flex-col gap-1 bg-black text-gray-300">
                     {simulatedLogs.length === 0 && <p className="text-gray-600">Waiting for build to start...</p>}
-                    {simulatedLogs.map((log, i) => (
+                    {simulatedLogs.map((log: string | string[], i: any) => (
                       <div key={i} className={`${log.includes('ERROR') ? 'text-red-400' : log.includes('Done') ? 'text-green-400 font-bold' : log.includes('Notice:') ? 'text-yellow-400' : 'text-gray-300'}`}>
                         <span className="text-gray-600 mr-2">{'>'}</span> {log}
                       </div>
