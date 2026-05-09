@@ -1,0 +1,6 @@
+{
+  "name": "FNF Web Porting Utility",
+  "description": "Upload an FNF mods folder to detect the engine and generate a build pipeline for an HTML5 web export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

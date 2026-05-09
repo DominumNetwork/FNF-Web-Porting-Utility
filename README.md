@@ -1,6 +1,6 @@
 # FNF Web Porting Utility
 
-A web-based tool designed to help Friday Night Funkin' modders quickly generate build pipelines for HTML5 web ports.
+A web-based DevOps toolchain orchestrator designed to help Friday Night Funkin' modders quickly generate build pipelines for HTML5 web ports.
 
 ## Overview
 
