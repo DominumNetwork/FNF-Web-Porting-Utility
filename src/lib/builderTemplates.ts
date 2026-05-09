@@ -108,9 +108,11 @@ ${jsEngineScript}${videoScript}
                                                           -e 's/sys\\.io\\.Process/Process/g' \\
                                                           -e 's/sys\\.thread\\.Thread/Thread/g' \\
                                                           -e 's/sys\\.thread\\.Mutex/Mutex/g' \\
-                                                          -e '/import cpp\\./d' \\
+                                                          -e '/import cpp\\.ConstCharStar/d' \\
                                                           -e 's/cpp\\.ConstCharStar/String/g' \\
-                                                          -e 's/cpp\\.Callable/Dynamic/g' {} +
+                                                          -e 's/cpp\\.Callable/Dynamic/g' \\
+                                                          -e '/import llua\\./d' \\
+                                                          -e '/llua\\./d' {} +
           find . -name "FlxSoundTray.hx" -type f -exec sed -i 's/public function new(/public function showIncrement() { show(); } public function showDecrement() { show(); }\\n\\n&/g' {} +
 
       - name: Optimization & Web Compile Build
