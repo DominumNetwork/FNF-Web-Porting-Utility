@@ -62,7 +62,7 @@ app.post('/build', upload.single('modZip'), (req, res) => {
       fs.writeFileSync(\`\${workDir}/engine-source/source/Thread.hx\`, 'class Thread { public static function create(f:Void->Void) { f(); } public static function readMessage(b:Bool) return null; public static function sendMessage(m:Dynamic) {} }');
       fs.writeFileSync(\`\${workDir}/engine-source/source/Mutex.hx\`, 'class Mutex { public function new() {} public function acquire() {} public function release() {} }');
 
-      execSync(\`sed -i -e '/discord_rpc/d' -e '/discord-rpc/d' Project.xml || true\`, { cwd: \`\${workDir}/engine-source\` });
+      execSync(\`sed -i -e '/discord_rpc/d' -e '/discord-rpc/d' -e '/linc_luajit/d' Project.xml || true\`, { cwd: \`\${workDir}/engine-source\` });
       execSync(\`mkdir -p source/hxdiscord_rpc\`, { cwd: \`\${workDir}/engine-source\` });
       fs.writeFileSync(\`\${workDir}/engine-source/source/hxdiscord_rpc/Discord.hx\`, 'package hxdiscord_rpc; class Discord { public static function Initialize(a:String,b:Bool,c:Dynamic){} public static function Shutdown(){} public static function RunCallbacks(){} public static function UpdatePresence(a:Dynamic){} public static function ClearPresence(){} }');
       fs.writeFileSync(\`\${workDir}/engine-source/source/hxdiscord_rpc/Types.hx\`, 'package hxdiscord_rpc; class Types { public static inline var DISCORD_REPLY_NO=0; public static inline var DISCORD_REPLY_YES=1; public static inline var DISCORD_REPLY_IGNORE=2; }');
