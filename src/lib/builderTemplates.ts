@@ -90,26 +90,22 @@ ${jsEngineScript}${videoScript}
       - name: Patch HTML5 incompatible code (Mock Sys)
         run: |
           cd engine-source
-          mkdir -p source/mock
-          echo 'package mock; class FileSystem { public static function absolutePath(path:String) return path; public static function exists(path:String) return false; public static function readDirectory(path:String):Array<String> return []; public static function isDirectory(path:String) return false; public static function stat(path:String) return null; public static function fullPath(path:String) return path; public static function createDirectory(path:String) {} public static function deleteFile(path:String) {} public static function deleteDirectory(path:String) {} }' > source/mock/FileSystem.hx
-          echo 'package mock; class File { public static function getContent(path:String) return ""; public static function getBytes(path:String) return null; public static function saveContent(path:String, c:String) return; public static function saveBytes(path:String, b:Dynamic) return; public static function copy(s:String, d:String) {} }' > source/mock/File.hx
-          echo 'package mock; class Sys { public static function exit(code:Int) {} public static function sleep(t:Float) {} public static function command(c:String, ?a:Array<String>) return 0; public static function args():Array<String> return []; public static function getCwd() return ""; public static function setCwd(s:String) {} public static function print(v:Dynamic) {} public static function println(v:Dynamic) {} public static function environment() return new haxe.ds.StringMap<String>(); public static function getEnv(s:String) return ""; public static function programPath() return ""; }' > source/mock/Sys.hx
-          echo 'package mock; class Process { public function new(c:String, ?a:Dynamic) {} public function exitCode(b:Bool=true) return 0; public function close() {} }' > source/mock/Process.hx
-          echo 'package mock; class Thread { public static function create(f:Void->Void) { f(); } public static function readMessage(b:Bool) return null; public static function sendMessage(m:Dynamic) {} }' > source/mock/Thread.hx
-          echo 'package mock; class Mutex { public function new() {} public function acquire() {} public function release() {} }' > source/mock/Mutex.hx
+          echo 'class FileSystem { public static function absolutePath(path:String) return path; public static function exists(path:String) return false; public static function readDirectory(path:String):Array<String> return []; public static function isDirectory(path:String) return false; public static function stat(path:String) return null; public static function fullPath(path:String) return path; public static function createDirectory(path:String) {} public static function deleteFile(path:String) {} public static function deleteDirectory(path:String) {} }' > source/FileSystem.hx
+          echo 'class File { public static function getContent(path:String) return ""; public static function getBytes(path:String) return null; public static function saveContent(path:String, c:String) return; public static function saveBytes(path:String, b:Dynamic) return; public static function copy(s:String, d:String) {} }' > source/File.hx
+          echo 'class Sys { public static function exit(code:Int) {} public static function sleep(t:Float) {} public static function command(c:String, ?a:Array<String>) return 0; public static function args():Array<String> return []; public static function getCwd() return ""; public static function setCwd(s:String) {} public static function print(v:Dynamic) {} public static function println(v:Dynamic) {} public static function environment() return new haxe.ds.StringMap<String>(); public static function getEnv(s:String) return ""; public static function programPath() return ""; }' > source/Sys.hx
+          echo 'class Process { public function new(c:String, ?a:Dynamic) {} public function exitCode(b:Bool=true) return 0; public function close() {} }' > source/Process.hx
+          echo 'class Thread { public static function create(f:Void->Void) { f(); } public static function readMessage(b:Bool) return null; public static function sendMessage(m:Dynamic) {} }' > source/Thread.hx
+          echo 'class Mutex { public function new() {} public function acquire() {} public function release() {} }' > source/Mutex.hx
           
-          find source -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/mock.FileSystem/g' \\
-                                                          -e 's/sys\\.io\\.File/mock.File/g' \\
-                                                          -e 's/sys\\.io\\.Process/mock.Process/g' \\
-                                                          -e 's/sys\\.thread\\.Thread/mock.Thread/g' \\
-                                                          -e 's/sys\\.thread\\.Mutex/mock.Mutex/g' \\
-                                                          -e 's/\\bSys\\./mock.Sys./g' \\
-                                                          -e 's/import Sys;/import mock.Sys;/g' \\
+          find source -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/FileSystem/g' \\
+                                                          -e 's/sys\\.io\\.File/File/g' \\
+                                                          -e 's/sys\\.io\\.Process/Process/g' \\
+                                                          -e 's/sys\\.thread\\.Thread/Thread/g' \\
+                                                          -e 's/sys\\.thread\\.Mutex/Mutex/g' \\
                                                           -e '/import cpp\\./d' \\
                                                           -e 's/cpp\\.ConstCharStar/String/g' \\
-                                                          -e 's/cpp\\.Callable/Dynamic/g' \\
-                                                          -e 's/^package.*/&\\nimport mock.FileSystem;\\nimport mock.File;\\nimport mock.Process;\\nimport mock.Thread;\\nimport mock.Mutex;\\nimport mock.Sys;/g' {} +
-          find source -name "FlxSoundTray.hx" -type f -exec sed -i 's/public function new(/public function showIncrement() { show(); } public function showDecrement() { show(); }\\n\\n&/g' {} +
+                                                          -e 's/cpp\\.Callable/Dynamic/g' {} +
+          find . -name "FlxSoundTray.hx" -type f -exec sed -i 's/public function new(/public function showIncrement() { show(); } public function showDecrement() { show(); }\\n\\n&/g' {} +
 
       - name: Optimization & Web Compile Build
         run: |
