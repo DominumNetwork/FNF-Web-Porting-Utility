@@ -21,6 +21,6 @@ Since web browsers cannot natively compile Haxe, this application acts as the fr
 1. **Upload your Mod**: Drag and drop a `.zip` file containing your engine/mod files into the upload zone.
 2. **Review Detection**: The utility will inform you of the detected engine, the file count, and any necessary compatibility fixes (e.g., MP4 videos, strict character casings).
 3. **Choose your Pipeline**:
-   - Save the **GitHub Action** to `.github/workflows/build-port.yml` in your repository.
+   - Save the **GitHub Action** to `.github/workflows/build-port.yml` in your repository. Then go to your repository's "Actions" tab, select the workflow, and paste a direct download link to your mod (from Google Drive, Dropbox, etc.) to start the build automatically in the cloud.
    - Or, run the **VPS Worker** on your own server.
-4. **Deploy & Embed**: Once your worker finishes zipping the HTML5 build, extract it to a public GitHub repository. Use the generated `jsDelivr` HTML snippet to easily embed the game on any webpage.
+4. **Deploy & Embed**: The GitHub Action will automatically compile the engine and push all the processed web files to a `web-build` branch. You can then use the generated `jsDelivr` HTML snippet to easily embed the game on any webpage without manually handling large uploads.

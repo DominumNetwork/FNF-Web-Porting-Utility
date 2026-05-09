@@ -6,7 +6,7 @@ export function generateGithubAction(engine: EngineType, hasVideos: boolean, fil
     'Codename Engine': 'CodenameCrew/CodenameEngine',
     'Leather Engine': 'Leather128/LeatherEngine',
     'JS Engine': 'Sirox228/Friday-Night-Funkin-JS-Engine',
-    'Unknown': 'ShadowMario/FNF-PsychEngine' // Default fallback
+    'Unknown': 'ShadowMario/FNF-PsychEngine'
   };
 
   const engineRepo = engineRepoMapping[engine];
@@ -30,12 +30,17 @@ export function generateGithubAction(engine: EngineType, hasVideos: boolean, fil
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [build_web_port]
+    inputs:
+      mod_url:
+        description: 'Direct URL to your mod .zip file (Google Drive, Dropbox, MediaFire, Discord, etc.)'
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout Base Engine
         uses: actions/checkout@v3
@@ -44,10 +49,22 @@ jobs:
           path: 'engine-source'
 
       - name: Download Mod Payload
-        uses: actions/download-artifact@v3
-        with:
-          name: mod-payload
-          path: mods_upload
+        run: |
+          echo "Downloading mod from URL provided..."
+          pip install gdown --quiet
+          
+          URL="\${{ github.event.inputs.mod_url }}"
+          
+          if [[ "$URL" == *"drive.google.com"* ]]; then
+            gdown "$URL" -O mod-payload.zip --fuzzy
+          else
+            wget -q -O mod-payload.zip "$URL"
+          fi
+          
+          echo "Extracting Mod Payload..."
+          mkdir -p mods_upload
+          unzip -q mod-payload.zip -d mods_upload/
+          rm mod-payload.zip
 
       - name: Inject Mods into Engine
         run: |
@@ -104,5 +121,15 @@ ${jsEngineScript}${videoScript}
         with:
           name: web-export
           path: web_export.zip
+
+      - name: Auto-Publish to GitHub Branch
+        run: |
+          cd engine-source/export/release/html5/bin
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Automated Web Port Build"
+          git push --force "https://x-access-token:\${{ secrets.GITHUB_TOKEN }}@github.com/\${{ github.repository }}.git" HEAD:web-build
 `;
 }
