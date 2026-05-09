@@ -93,11 +93,17 @@ ${jsEngineScript}${videoScript}
           echo 'class FileSystem { public static function absolutePath(path:String) return path; public static function exists(path:String) return false; public static function readDirectory(path:String):Array<String> return []; public static function isDirectory(path:String) return false; public static function stat(path:String) return null; public static function fullPath(path:String) return path; public static function createDirectory(path:String) {} public static function deleteFile(path:String) {} public static function deleteDirectory(path:String) {} }' > source/FileSystem.hx
           echo 'class File { public static function getContent(path:String) return ""; public static function getBytes(path:String) return null; public static function saveContent(path:String, c:String) return; public static function saveBytes(path:String, b:Dynamic) return; public static function copy(s:String, d:String) {} }' > source/File.hx
           echo 'class Sys { public static function exit(code:Int) {} public static function sleep(t:Float) {} public static function command(c:String, ?a:Array<String>) return 0; public static function args():Array<String> return []; public static function getCwd() return ""; public static function setCwd(s:String) {} public static function print(v:Dynamic) {} public static function println(v:Dynamic) {} public static function environment() return new haxe.ds.StringMap<String>(); public static function getEnv(s:String) return ""; public static function programPath() return ""; }' > source/Sys.hx
-          echo 'class Process { public function new(c:String, ?a:Dynamic) {} public function exitCode(b:Bool=true) return 0; public function close() {} }' > source/Process.hx
+          echo 'class Process { public var stdout:Dynamic; public var stderr:Dynamic; public function new(c:String, ?a:Dynamic) { stdout = { readAll: function() return { toString: function() return "" }, readLine: function() return "" }; stderr = stdout; } public function exitCode(b:Bool=true) return 0; public function close() {} }' > source/Process.hx
           echo 'class Thread { public static function create(f:Void->Void) { f(); } public static function readMessage(b:Bool) return null; public static function sendMessage(m:Dynamic) {} }' > source/Thread.hx
           echo 'class Mutex { public function new() {} public function acquire() {} public function release() {} }' > source/Mutex.hx
           
-          find source -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/FileSystem/g' \\
+          sed -i -e '/discord_rpc/d' -e '/discord-rpc/d' Project.xml || true
+          mkdir -p source/hxdiscord_rpc
+          echo 'package hxdiscord_rpc; class Discord { public static function Initialize(a:String,b:Bool,c:Dynamic){} public static function Shutdown(){} public static function RunCallbacks(){} public static function UpdatePresence(a:Dynamic){} public static function ClearPresence(){} }' > source/hxdiscord_rpc/Discord.hx
+          echo 'package hxdiscord_rpc; class Types { public static inline var DISCORD_REPLY_NO=0; public static inline var DISCORD_REPLY_YES=1; public static inline var DISCORD_REPLY_IGNORE=2; }' > source/hxdiscord_rpc/Types.hx
+          echo 'package hxdiscord_rpc; typedef DiscordPresence = Dynamic;' > source/hxdiscord_rpc/DiscordPresence.hx
+
+          find . -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/FileSystem/g' \\
                                                           -e 's/sys\\.io\\.File/File/g' \\
                                                           -e 's/sys\\.io\\.Process/Process/g' \\
                                                           -e 's/sys\\.thread\\.Thread/Thread/g' \\
