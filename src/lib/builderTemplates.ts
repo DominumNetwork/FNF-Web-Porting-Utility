@@ -103,7 +103,7 @@ ${jsEngineScript}${videoScript}
           echo 'package hxdiscord_rpc; class Types { public static inline var DISCORD_REPLY_NO=0; public static inline var DISCORD_REPLY_YES=1; public static inline var DISCORD_REPLY_IGNORE=2; }' > source/hxdiscord_rpc/Types.hx
           echo 'package hxdiscord_rpc; typedef DiscordPresence = Dynamic;' > source/hxdiscord_rpc/DiscordPresence.hx
 
-          find . -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/FileSystem/g' \\
+          find source -name "*.hx" -type f -exec sed -i -e 's/sys\\.FileSystem/FileSystem/g' \\
                                                           -e 's/sys\\.io\\.File/File/g' \\
                                                           -e 's/sys\\.io\\.Process/Process/g' \\
                                                           -e 's/sys\\.thread\\.Thread/Thread/g' \\
